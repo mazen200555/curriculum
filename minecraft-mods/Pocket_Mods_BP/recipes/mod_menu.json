@@ -1,0 +1,22 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:recipe_shapeless": {
+        "description": {
+            "identifier": "pocketmods:mod_menu"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "ingredients": [
+            {
+                "item": "minecraft:book"
+            },
+            {
+                "item": "minecraft:glass_pane"
+            }
+        ],
+        "result": {
+            "item": "pocketmods:mod_menu"
+        }
+    }
+}

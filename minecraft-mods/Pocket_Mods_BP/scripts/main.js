@@ -1,13 +1,12 @@
-// Pocket Mods: script logic for Minecraft Bedrock (Pocket Edition) add-ons.
+// Pocket Mods entry point for Minecraft Bedrock (Pocket Edition).
 //
-// Only stable @minecraft/server APIs are used (manifest dependency 2.1.0),
-// so the "Beta APIs" experiment does not need to be turned on.
+// Mods in this add-on:
+//   1. Wind Charm    - right-click to launch yourself forward and up.
+//   2. Thunder Wand  - right-click to call lightning on the block you aim at.
+//   3. Mod Menu      - right-click (or type /menu) to open the window in menu.js.
+//   4. /sethome, /home - save a home point and teleport back to it (home.js).
 //
-// Mods in this file:
-//   1. Wind Charm   - right-click to launch yourself forward and up.
-//   2. Thunder Wand - right-click to call lightning on the block you aim at.
-//   3. /sethome and /home - save a home point and teleport back to it.
-
+// Settings are in config.js. Only stable @minecraft/server and @minecraft/server-ui APIs are used.
 import {
     CommandPermissionLevel,
     CustomCommandStatus,
@@ -15,40 +14,35 @@ import {
     system,
     world,
 } from '@minecraft/server';
+import { COMMANDS, MOD_MENU, THUNDER_WAND, WIND_CHARM } from './config.js';
+import { goHome, saveHome } from './home.js';
+import { openMenu } from './menu.js';
 
-// ---- Settings (edit, then run build.py to rebuild the add-on) --------------
-// 20 ticks = 1 second.
-
-const WIND_CHARM = {
-    id: 'pocketmods:wind_charm',
-    name: 'Wind Charm',
-    cooldownTicks: 80,     // 4 seconds between uses
-    forwardStrength: 1.4,  // push in the direction you are looking
-    upStrength: 1.0,       // push upward
-    slowFallTicks: 100,    // 5 seconds of slow falling so the landing is soft
-};
-
-const THUNDER_WAND = {
-    id: 'pocketmods:thunder_wand',
-    name: 'Thunder Wand',
-    cooldownTicks: 60,     // 3 seconds between strikes
-    range: 60,             // how far away (in blocks) you can target
-    minDistance: 4,        // closer than this and the strike could hit you
-};
-
-const HOME_PROPERTY = 'pocketmods_home';
+/**
+ * @typedef {import('@minecraft/server').CustomCommandOrigin} CommandOrigin
+ * @typedef {import('@minecraft/server').CustomCommandRegistry} CommandRegistry
+ * @typedef {{ id: string, name: string, cooldownTicks: number }} CooldownItem
+ */
 
 // ---- Shared helpers ---------------------------------------------------------
 
 // Cooldowns live in memory, keyed by player id and item id.
 const lastUsedTick = new Map();
 
+/**
+ * @param {Player} player
+ * @param {{ id: string }} item
+ */
 function cooldownKey(player, item) {
     return `${player.id}|${item.id}`;
 }
 
 // Returns true when the item can be used right now. If it is still recharging,
 // shows the time left on the action bar and returns false.
+/**
+ * @param {Player} player
+ * @param {CooldownItem} item
+ */
 function canUse(player, item) {
     const last = lastUsedTick.get(cooldownKey(player, item));
     if (last === undefined) {
@@ -69,25 +63,35 @@ function canUse(player, item) {
     return true;
 }
 
+/**
+ * @param {Player} player
+ * @param {{ id: string }} item
+ */
 function startCooldown(player, item) {
     lastUsedTick.set(cooldownKey(player, item), system.currentTick);
 }
 
+/**
+ * @param {{ x: number, y: number, z: number }} a
+ * @param {{ x: number, y: number, z: number }} b
+ */
 function distance(a, b) {
     return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
-function round1(value) {
-    return Math.round(value * 10) / 10;
-}
-
-// "minecraft:overworld" -> "overworld", the name world.getDimension() expects.
-function dimensionName(dimension) {
-    return dimension.id.replace('minecraft:', '');
+// Custom command callbacks come from the command system, not from a player.
+/**
+ * @param {CommandOrigin} origin
+ * @returns {Player | undefined}
+ */
+function playerFromOrigin(origin) {
+    const source = origin.initiator ?? origin.sourceEntity;
+    return source instanceof Player ? source : undefined;
 }
 
 // ---- Mod 1: Wind Charm ------------------------------------------------------
 
+/** @param {Player} player */
 function useWindCharm(player) {
     if (!canUse(player, WIND_CHARM)) {
         return;
@@ -114,6 +118,7 @@ function useWindCharm(player) {
 
 // ---- Mod 2: Thunder Wand ----------------------------------------------------
 
+/** @param {Player} player */
 function useThunderWand(player) {
     if (!canUse(player, THUNDER_WAND)) {
         return;
@@ -138,59 +143,6 @@ function useThunderWand(player) {
     player.dimension.playSound('ambient.weather.thunder', target);
 }
 
-// ---- Mod 3: /sethome and /home ----------------------------------------------
-// Custom command callbacks run in read-only mode, so the work that changes
-// anything (saving, teleporting, messages) is queued with system.run().
-
-function playerFromOrigin(origin) {
-    const source = origin.initiator ?? origin.sourceEntity;
-    return source instanceof Player ? source : undefined;
-}
-
-// Returns the saved home, or undefined if none is saved or the data is damaged.
-function readHome(player) {
-    const raw = player.getDynamicProperty(HOME_PROPERTY);
-    if (typeof raw !== 'string') {
-        return undefined;
-    }
-    try {
-        const home = JSON.parse(raw);
-        const hasCoords = [home.x, home.y, home.z].every(
-            (n) => typeof n === 'number' && Number.isFinite(n),
-        );
-        return hasCoords && typeof home.dimension === 'string' ? home : undefined;
-    } catch (error) {
-        return undefined;
-    }
-}
-
-function saveHome(player) {
-    const { x, y, z } = player.location;
-    const home = {
-        x: round1(x),
-        y: round1(y),
-        z: round1(z),
-        dimension: dimensionName(player.dimension),
-    };
-    player.setDynamicProperty(HOME_PROPERTY, JSON.stringify(home));
-    player.sendMessage(`Home saved at ${home.x}, ${home.y}, ${home.z} (${home.dimension}).`);
-}
-
-function goHome(player) {
-    const home = readHome(player);
-    if (!home) {
-        player.sendMessage('You have no home yet. Stand somewhere and type /sethome.');
-        return;
-    }
-    try {
-        const dimension = world.getDimension(home.dimension);
-        player.teleport({ x: home.x, y: home.y, z: home.z }, { dimension });
-        player.sendMessage('Welcome home!');
-    } catch (error) {
-        player.sendMessage('Could not teleport you home. Save your home again with /sethome.');
-    }
-}
-
 // ---- Registration -----------------------------------------------------------
 
 // Right-click (use) with one of the custom items.
@@ -207,44 +159,42 @@ world.afterEvents.itemUse.subscribe((event) => {
         case THUNDER_WAND.id:
             useThunderWand(player);
             break;
+        case MOD_MENU.id:
+            system.run(() => openMenu(player));
+            break;
     }
 });
 
-// Slash commands. Minecraft also accepts the plain names (/sethome and /home).
+// Registers a slash command that only players can use. The work runs on the next tick,
+// because custom command callbacks are read-only.
+/**
+ * @param {CommandRegistry} registry
+ * @param {string} name
+ * @param {string} description
+ * @param {(player: Player) => void} action
+ */
+function registerPlayerCommand(registry, name, description, action) {
+    registry.registerCommand(
+        {
+            name,
+            description,
+            permissionLevel: CommandPermissionLevel.Any,
+            cheatsRequired: false,
+        },
+        (origin) => {
+            const player = playerFromOrigin(origin);
+            if (!player) {
+                return { status: CustomCommandStatus.Failure, message: 'Only players can use this command.' };
+            }
+            system.run(() => action(player));
+            return { status: CustomCommandStatus.Success };
+        },
+    );
+}
+
 system.beforeEvents.startup.subscribe((event) => {
     const registry = event.customCommandRegistry;
-
-    registry.registerCommand(
-        {
-            name: 'pocketmods:sethome',
-            description: 'Save your current position as your home.',
-            permissionLevel: CommandPermissionLevel.Any,
-            cheatsRequired: false,
-        },
-        (origin) => {
-            const player = playerFromOrigin(origin);
-            if (!player) {
-                return { status: CustomCommandStatus.Failure, message: 'Only players can use this command.' };
-            }
-            system.run(() => saveHome(player));
-            return { status: CustomCommandStatus.Success };
-        },
-    );
-
-    registry.registerCommand(
-        {
-            name: 'pocketmods:home',
-            description: 'Teleport to your saved home.',
-            permissionLevel: CommandPermissionLevel.Any,
-            cheatsRequired: false,
-        },
-        (origin) => {
-            const player = playerFromOrigin(origin);
-            if (!player) {
-                return { status: CustomCommandStatus.Failure, message: 'Only players can use this command.' };
-            }
-            system.run(() => goHome(player));
-            return { status: CustomCommandStatus.Success };
-        },
-    );
+    registerPlayerCommand(registry, COMMANDS.sethome, 'Save your current position as your home.', saveHome);
+    registerPlayerCommand(registry, COMMANDS.home, 'Teleport to your saved home.', goHome);
+    registerPlayerCommand(registry, COMMANDS.menu, 'Open the Pocket Mods window.', openMenu);
 });

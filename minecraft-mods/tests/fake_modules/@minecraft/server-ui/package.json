@@ -1,0 +1,8 @@
+{
+    "name": "@minecraft/server-ui",
+    "version": "2.0.0",
+    "private": true,
+    "description": "Test stand-in for the Minecraft Bedrock UI script module. Not the real game API.",
+    "type": "module",
+    "main": "index.js"
+}

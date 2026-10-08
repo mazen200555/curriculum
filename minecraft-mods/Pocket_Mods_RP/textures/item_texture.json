@@ -7,6 +7,9 @@
         },
         "pocketmods:thunder_wand": {
             "textures": "textures/items/thunder_wand"
+        },
+        "pocketmods:mod_menu": {
+            "textures": "textures/items/mod_menu"
         }
     }
 }
