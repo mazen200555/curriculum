@@ -47,9 +47,11 @@ add-on won't load on older versions.
   Packs.
 - **Wand or charm does nothing.** The behavior pack isn't turned on for this world. Turn
   on Pocket Mods under Behavior Packs.
-- **`/home` or `/sethome` is "unknown command".** Turn on the behavior pack first. If that
-  doesn't work, go to the world settings, open **Experiments**, and turn on **Beta APIs**.
-  That option can't be undone for the world, so copy the world first.
+- **`/home` or `/sethome` says "unknown command".** Turn on the behavior pack first. If the
+  short names still don't work, type the full names `/pocketmods:home` and
+  `/pocketmods:sethome`. If those fail too, the script isn't loading. Go to the world
+  settings, open **Experiments**, and turn on **Beta APIs**. That option can't be undone
+  for the world, so copy the world first.
 
 ## Edit and rebuild
 
