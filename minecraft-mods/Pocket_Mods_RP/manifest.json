@@ -1,0 +1,30 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "Pocket Mods (Resources)",
+        "description": "Textures and names for the Pocket Mods add-on.",
+        "uuid": "a95b5767-f7e6-4811-86ce-0f2c6f2300e2",
+        "version": [
+            1,
+            0,
+            0
+        ],
+        "min_engine_version": [
+            1,
+            21,
+            100
+        ]
+    },
+    "modules": [
+        {
+            "description": "Pocket Mods textures and names",
+            "type": "resources",
+            "uuid": "28ae60f0-f926-40b8-8c8b-3c5269d7f960",
+            "version": [
+                1,
+                0,
+                0
+            ]
+        }
+    ]
+}

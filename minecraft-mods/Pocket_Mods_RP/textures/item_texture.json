@@ -1,0 +1,12 @@
+{
+    "resource_pack_name": "Pocket Mods",
+    "texture_name": "atlas.items",
+    "texture_data": {
+        "pocketmods:wind_charm": {
+            "textures": "textures/items/wind_charm"
+        },
+        "pocketmods:thunder_wand": {
+            "textures": "textures/items/thunder_wand"
+        }
+    }
+}

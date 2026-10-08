@@ -1,0 +1,56 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "Pocket Mods (Behavior)",
+        "description": "Wind Charm, Thunder Wand, /sethome and /home for Minecraft Bedrock (Pocket Edition).",
+        "uuid": "8e957844-160b-4104-9734-71726bca6ba0",
+        "version": [
+            1,
+            0,
+            0
+        ],
+        "min_engine_version": [
+            1,
+            21,
+            100
+        ]
+    },
+    "modules": [
+        {
+            "description": "Items and recipes",
+            "type": "data",
+            "uuid": "f80720f0-df29-4e28-8447-9ee9d589d0ce",
+            "version": [
+                1,
+                0,
+                0
+            ]
+        },
+        {
+            "description": "Script logic",
+            "type": "script",
+            "language": "javascript",
+            "entry": "scripts/main.js",
+            "uuid": "e7ad8a40-962b-421b-aba9-d0ae27bf99b3",
+            "version": [
+                1,
+                0,
+                0
+            ]
+        }
+    ],
+    "dependencies": [
+        {
+            "uuid": "a95b5767-f7e6-4811-86ce-0f2c6f2300e2",
+            "version": [
+                1,
+                0,
+                0
+            ]
+        },
+        {
+            "module_name": "@minecraft/server",
+            "version": "2.1.0"
+        }
+    ]
+}

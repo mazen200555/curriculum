@@ -1,0 +1,16 @@
+{
+    "format_version": "1.21.90",
+    "minecraft:item": {
+        "description": {
+            "identifier": "pocketmods:wind_charm",
+            "menu_category": {
+                "category": "equipment"
+            }
+        },
+        "components": {
+            "minecraft:icon": "pocketmods:wind_charm",
+            "minecraft:max_stack_size": 1,
+            "minecraft:hand_equipped": true
+        }
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "format_version": "1.20.80",
+    "minecraft:recipe_shaped": {
+        "description": {
+            "identifier": "pocketmods:wind_charm"
+        },
+        "tags": [
+            "crafting_table"
+        ],
+        "pattern": [
+            " F ",
+            "FSF",
+            " F "
+        ],
+        "key": {
+            "F": {
+                "item": "minecraft:feather"
+            },
+            "S": {
+                "item": "minecraft:stick"
+            }
+        },
+        "result": {
+            "item": "pocketmods:wind_charm"
+        }
+    }
+}
